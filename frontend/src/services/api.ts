@@ -85,7 +85,7 @@ class ApiService {
       formData.append('password', options.password);
     }
 
-    const response = await this.api.post<UploadResponse>('/api/files/upload', formData, {
+    const response = await this.api.post<UploadResponse>('/api/upload', formData, {
       headers: {
         'Content-Type': 'multipart/form-data',
       },

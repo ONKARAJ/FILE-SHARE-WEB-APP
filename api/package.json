@@ -1,0 +1,10 @@
+{
+  "name": "file-share-api",
+  "version": "1.0.0",
+  "description": "Serverless API functions for file sharing",
+  "main": "upload.js",
+  "dependencies": {
+    "formidable": "^3.5.1",
+    "uuid": "^9.0.1"
+  }
+}

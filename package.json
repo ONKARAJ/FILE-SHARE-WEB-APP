@@ -21,6 +21,10 @@
   ],
   "author": "ONKARAJ",
   "license": "MIT",
+  "dependencies": {
+    "formidable": "^3.5.1",
+    "uuid": "^9.0.1"
+  },
   "devDependencies": {
     "concurrently": "^8.2.2"
   }
