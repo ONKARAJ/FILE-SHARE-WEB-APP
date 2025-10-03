@@ -36,7 +36,7 @@ const DownloadPage: React.FC = () => {
         is_expired: false,
         expires_at: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
         created_at: new Date().toISOString(),
-        last_accessed_at: null,
+        last_accessed_at: undefined,
         user_id: undefined
       };
       
