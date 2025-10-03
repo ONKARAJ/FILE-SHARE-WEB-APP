@@ -76,6 +76,15 @@ class ApiService {
     };
   }
 
+  private fileToBase64(file: File): Promise<string> {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.readAsDataURL(file);
+      reader.onload = () => resolve(reader.result as string);
+      reader.onerror = (error) => reject(error);
+    });
+  }
+
   async login(data: LoginForm): Promise<AuthResponse> {
     const response = await this.api.post<AuthResponse>('/api/auth/login', data);
     return response.data;
@@ -92,11 +101,14 @@ class ApiService {
     options: UploadOptions = {},
     onProgress?: (progress: number) => void
   ): Promise<UploadResponse> {
-    // For demo purposes, simulate file upload with JSON data
+    // Convert file to base64 for upload
+    const fileContent = await this.fileToBase64(file);
+    
     const uploadData = {
       fileName: file.name,
       fileSize: file.size,
       fileType: file.type,
+      fileContent: fileContent,
       ...options
     };
 

@@ -1,10 +1,5 @@
-// Simple in-memory storage for demo (in production, use a database)
-const files = new Map();
-
-// Simple ID generator for demo
-function generateId() {
-  return Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
-}
+// Use shared file storage
+const { files, generateId, formatFileSize } = require('./fileStorage');
 
 const config = {
   api: {
@@ -33,18 +28,23 @@ async function handler(req, res) {
   }
 
   try {
-    // For demo purposes, simulate file upload with JSON data
-    const { fileName, fileSize, fileType } = req.body;
+    // Handle real file upload with base64 encoded content
+    const { fileName, fileSize, fileType, fileContent } = req.body;
     
-    if (!fileName) {
-      return res.status(400).json({ error: 'File name is required' });
+    if (!fileName || !fileContent) {
+      return res.status(400).json({ error: 'File name and content are required' });
+    }
+
+    // Validate file content is base64
+    if (!fileContent.startsWith('data:')) {
+      return res.status(400).json({ error: 'Invalid file content format' });
     }
 
     // Generate unique file ID
     const fileId = generateId();
     
-    // Create file metadata
-    const fileMetadata = {
+    // Create file metadata and store actual file content
+    const fileData = {
       id: fileId,
       original_name: fileName,
       mime_type: fileType || 'application/octet-stream',
@@ -57,10 +57,14 @@ async function handler(req, res) {
       expires_at: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // 7 days
       created_at: new Date().toISOString(),
       last_accessed_at: null,
+      // Store the actual file content
+      file_content: fileContent, // base64 data URL
     };
 
-    // Store file metadata
-    files.set(fileId, fileMetadata);
+    // Store complete file data (metadata + content)
+    files.set(fileId, fileData);
+    
+    console.log(`💾 Stored file ${fileId}: ${fileName} (${formatFileSize(fileSize || 0)})`);
 
     // Generate shareable link to frontend download page
     const protocol = req.headers['x-forwarded-proto'] || 'https';
@@ -70,9 +74,12 @@ async function handler(req, res) {
     
     console.log('🔗 Generated share link:', shareableLink);
 
-    // For demo, determine if file can be previewed
+    // Determine if file can be previewed
     const previewableTypes = ['image/', 'text/', 'application/pdf'];
-    const canPreview = previewableTypes.some(type => fileMetadata.mime_type?.startsWith(type));
+    const canPreview = previewableTypes.some(type => fileData.mime_type?.startsWith(type));
+
+    // Return metadata only (don't send file content back in response)
+    const { file_content, ...fileMetadata } = fileData;
 
     res.status(200).json({
       success: true,
@@ -85,14 +92,6 @@ async function handler(req, res) {
     console.error('Upload error:', error);
     res.status(500).json({ error: 'Internal server error' });
   }
-}
-
-function formatFileSize(bytes) {
-  if (bytes === 0) return '0 Bytes';
-  const k = 1024;
-  const sizes = ['Bytes', 'KB', 'MB', 'GB'];
-  const i = Math.floor(Math.log(bytes) / Math.log(k));
-  return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
 }
 
 module.exports = handler;
