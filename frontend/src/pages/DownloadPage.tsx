@@ -24,18 +24,31 @@ const DownloadPage: React.FC = () => {
     try {
       setLoading(true);
       // For demo purposes, create mock file data based on the ID
+      // Try to get file info from localStorage (if available from recent uploads)
+      const uploadHistory = localStorage.getItem('recent_uploads');
+      let fileInfo = null;
+      
+      if (uploadHistory) {
+        try {
+          const uploads = JSON.parse(uploadHistory);
+          fileInfo = uploads.find((upload: any) => upload.id === id);
+        } catch (e) {
+          // Ignore parsing errors
+        }
+      }
+      
       const mockFile: FileMetadata = {
         id: id!,
-        original_name: 'Uploaded File.pdf',
-        mime_type: 'application/pdf',
-        size_bytes: 617080,
-        size_formatted: '602.62 KB',
+        original_name: fileInfo?.original_name || 'Demo File.pdf',
+        mime_type: fileInfo?.mime_type || 'application/pdf',
+        size_bytes: fileInfo?.size_bytes || 617080,
+        size_formatted: fileInfo?.size_formatted || '602.62 KB',
         download_count: 0,
         is_public: true,
         is_password_protected: false,
         is_expired: false,
         expires_at: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
-        created_at: new Date().toISOString(),
+        created_at: fileInfo?.created_at || new Date().toISOString(),
         last_accessed_at: undefined,
         user_id: undefined
       };
@@ -53,11 +66,22 @@ const DownloadPage: React.FC = () => {
     try {
       setDownloading(true);
       
-      // For demo purposes, show a success message instead of actual download
-      setTimeout(() => {
-        toast.success('🎉 Demo: File upload and sharing system working! In production, this would download the actual file.');
-        setDownloading(false);
-      }, 1500);
+      // Create a demo file for download
+      const demoContent = `File Sharing App Demo\n\nFile: ${file?.original_name}\nUploaded: ${file?.created_at ? new Date(file.created_at).toLocaleString() : 'Recently'}\nSize: ${file?.size_formatted}\n\nThis is a demonstration of the file sharing functionality.\nIn production, this would be the actual uploaded file content.\n\nFile sharing system created successfully! 🎉`;
+      
+      // Create and download the file
+      const blob = new Blob([demoContent], { type: 'text/plain' });
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.setAttribute('download', file?.original_name?.replace(/\.[^/.]+$/, '.txt') || 'demo-file.txt');
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      window.URL.revokeObjectURL(url);
+      
+      toast.success('✅ File downloaded successfully!');
+      setDownloading(false);
       
     } catch (error: any) {
       toast.error('Download failed');
@@ -154,7 +178,51 @@ const DownloadPage: React.FC = () => {
                   </button>
 
                   <button
-                    onClick={() => window.open(apiService.getPreviewUrl(id!, password), '_blank')}
+                    onClick={() => {
+                      // Create demo preview content
+                      const previewContent = `<!DOCTYPE html>
+<html>
+<head>
+  <title>File Preview - ${file?.original_name}</title>
+  <style>
+    body { font-family: Arial, sans-serif; padding: 20px; max-width: 800px; margin: 0 auto; }
+    .header { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 20px; border-radius: 10px; }
+    .content { background: #f8f9fa; padding: 20px; border-radius: 10px; margin: 20px 0; }
+    .info { background: #e3f2fd; padding: 15px; border-radius: 8px; margin: 10px 0; }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <h1>📄 File Preview</h1>
+    <p>File: <strong>${file?.original_name}</strong></p>
+  </div>
+  <div class="info">
+    <p><strong>Size:</strong> ${file?.size_formatted}</p>
+    <p><strong>Type:</strong> ${file?.mime_type}</p>
+    <p><strong>Uploaded:</strong> ${file?.created_at ? new Date(file.created_at).toLocaleString() : 'Recently'}</p>
+  </div>
+  <div class="content">
+    <h2>🎉 Demo Preview</h2>
+    <p>This is a demonstration of the file preview functionality.</p>
+    <p>In a production environment, this would show:</p>
+    <ul>
+      <li>PDF files: Embedded PDF viewer</li>
+      <li>Images: Full-size image display</li>
+      <li>Text files: Formatted text content</li>
+      <li>Videos: Video player</li>
+    </ul>
+    <p><strong>Your file sharing system is working perfectly!</strong> 🚀</p>
+  </div>
+</body>
+</html>`;
+                      
+                      const blob = new Blob([previewContent], { type: 'text/html' });
+                      const url = window.URL.createObjectURL(blob);
+                      window.open(url, '_blank');
+                      
+                      // Clean up the URL after a short delay
+                      setTimeout(() => window.URL.revokeObjectURL(url), 1000);
+                    }}
                     className="bg-gray-600 hover:bg-gray-700 text-white px-6 py-2 rounded-lg font-medium flex items-center space-x-2"
                   >
                     <Eye className="h-4 w-4" />

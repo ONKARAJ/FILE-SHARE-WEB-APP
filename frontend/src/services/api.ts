@@ -121,6 +121,25 @@ class ApiService {
       });
       
       console.log('✅ Upload: Success!', response.data);
+      
+      // Store upload info in localStorage for demo purposes
+      try {
+        const uploadHistory = JSON.parse(localStorage.getItem('recent_uploads') || '[]');
+        uploadHistory.push({
+          id: response.data.file.id,
+          original_name: file.name,
+          mime_type: file.type,
+          size_bytes: file.size,
+          size_formatted: response.data.file.size_formatted,
+          created_at: response.data.file.created_at
+        });
+        // Keep only last 10 uploads
+        if (uploadHistory.length > 10) uploadHistory.splice(0, uploadHistory.length - 10);
+        localStorage.setItem('recent_uploads', JSON.stringify(uploadHistory));
+      } catch (e) {
+        // Ignore localStorage errors
+      }
+      
       return response.data;
     } catch (error: any) {
       console.error('❌ Upload: Error!', error);
