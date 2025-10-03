@@ -12,9 +12,9 @@ import {
 // Determine API base URL based on environment
 const getApiBaseUrl = () => {
   // TEMPORARY FIX: Force correct URL for production
-  if (typeof window !== 'undefined' && window.location.hostname === 'file-share-web-app.vercel.app') {
-    console.log('🔧 API: FORCED - Using correct production domain');
-    return 'https://file-share-web-app.vercel.app';
+  if (typeof window !== 'undefined' && window.location.hostname.includes('vercel.app')) {
+    console.log('🔧 API: FORCED - Using current production domain:', window.location.origin);
+    return window.location.origin;
   }
   // If running in production (on Vercel), use the current domain
   if (typeof window !== 'undefined' && window.location.hostname.includes('vercel.app')) {
@@ -122,9 +122,11 @@ class ApiService {
       
       console.log('✅ Upload: Success!', response.data);
       return response.data;
-    } catch (error) {
+    } catch (error: any) {
       console.error('❌ Upload: Error!', error);
-      throw error;
+      // Ensure error is properly formatted for React components
+      const errorMessage = error?.response?.data?.error || error?.message || 'Upload failed';
+      throw new Error(errorMessage);
     }
   }
 

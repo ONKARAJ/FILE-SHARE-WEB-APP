@@ -96,19 +96,20 @@ const DashboardPage: React.FC = () => {
         setAllUploadedFiles(prev => [...prev, completedUpload]);
       } catch (error: any) {
         // Update to error
+        const errorMessage = error.message || error.error || 'Upload failed';
         setUploadStates((prev) =>
           prev.map((state, index) =>
             index === i
               ? {
                   ...state,
                   status: 'error',
-                  error: error.error || 'Upload failed',
+                  error: errorMessage,
                 }
               : state
           )
         );
 
-        toast.error(`Failed to upload ${file.name}: ${error.error || 'Unknown error'}`);
+        toast.error(`Failed to upload ${file.name}: ${errorMessage}`);
       }
     }
 
