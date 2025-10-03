@@ -1,0 +1,27 @@
+{
+  "name": "file-share-web-app",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Modern file sharing application with React and Node.js",
+  "scripts": {
+    "dev": "concurrently \"npm run dev:backend\" \"npm run dev:frontend\"",
+    "dev:backend": "cd backend && npm run dev",
+    "dev:frontend": "cd frontend && npm start",
+    "build": "cd frontend && npm run build",
+    "start": "cd backend && npm start",
+    "install:all": "npm install && cd backend && npm install && cd ../frontend && npm install",
+    "vercel-build": "cd frontend && npm install && npm run build"
+  },
+  "keywords": [
+    "file-sharing",
+    "react",
+    "nodejs",
+    "clerk-auth",
+    "modern-ui"
+  ],
+  "author": "ONKARAJ",
+  "license": "MIT",
+  "devDependencies": {
+    "concurrently": "^8.2.2"
+  }
+}
