@@ -11,7 +11,17 @@ import {
   UploadOptions,
 } from '../types';
 
-const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000';
+// Determine API base URL based on environment
+const getApiBaseUrl = () => {
+  // If running in production (on Vercel), use the current domain
+  if (typeof window !== 'undefined' && window.location.hostname.includes('vercel.app')) {
+    return window.location.origin;
+  }
+  // Otherwise use environment variable or localhost
+  return process.env.REACT_APP_API_URL || 'http://localhost:5000';
+};
+
+const API_BASE_URL = getApiBaseUrl();
 
 class ApiService {
   private api: AxiosInstance;
