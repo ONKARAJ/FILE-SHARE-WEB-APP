@@ -13,6 +13,11 @@ import {
 
 // Determine API base URL based on environment
 const getApiBaseUrl = () => {
+  // TEMPORARY FIX: Force correct URL for production
+  if (typeof window !== 'undefined' && window.location.hostname === 'file-share-web-app.vercel.app') {
+    console.log('🔧 API: FORCED - Using correct production domain');
+    return 'https://file-share-web-app.vercel.app';
+  }
   // If running in production (on Vercel), use the current domain
   if (typeof window !== 'undefined' && window.location.hostname.includes('vercel.app')) {
     console.log('🔧 API: Using current domain for API calls:', window.location.origin);
@@ -26,6 +31,7 @@ const getApiBaseUrl = () => {
 
 const API_BASE_URL = getApiBaseUrl();
 console.log('🔧 API: Final API_BASE_URL:', API_BASE_URL);
+console.log('🔧 API: Cache bust - Version 2024-10-03-10:27 UTC');
 
 class ApiService {
   private api: AxiosInstance;
