@@ -18,7 +18,7 @@ const DownloadPage: React.FC = () => {
     if (id) {
       loadFileInfo();
     }
-  }, [id]);
+  }, [id]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const loadFileInfo = async () => {
     try {
