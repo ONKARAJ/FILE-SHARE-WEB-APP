@@ -63,8 +63,12 @@ async function handler(req, res) {
     files.set(fileId, fileMetadata);
 
     // Generate shareable link to frontend download page
-    const baseUrl = req.headers.origin || req.headers.host || 'https://file-share-web-1nond0wsd-onkar-rajs-projects.vercel.app';
+    const protocol = req.headers['x-forwarded-proto'] || 'https';
+    const host = req.headers.host || req.headers['x-forwarded-host'] || 'localhost';
+    const baseUrl = req.headers.origin || `${protocol}://${host}`;
     const shareableLink = `${baseUrl}/download/${fileId}`;
+    
+    console.log('🔗 Generated share link:', shareableLink);
 
     // For demo, determine if file can be previewed
     const previewableTypes = ['image/', 'text/', 'application/pdf'];
