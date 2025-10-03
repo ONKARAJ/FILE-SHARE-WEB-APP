@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Link2, Download, Shield, Clock, CheckCircle, Copy, Eye, Upload } from 'lucide-react';
+import { Link2, Shield, Clock, CheckCircle, Copy, Eye, Upload } from 'lucide-react';
 import toast from 'react-hot-toast';
 import DragDropZone from '../components/Upload/DragDropZone';
 import apiService from '../services/api';

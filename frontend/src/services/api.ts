@@ -4,8 +4,6 @@ import {
   LoginForm,
   RegisterForm,
   UploadResponse,
-  MultipleUploadResponse,
-  FileMetadata,
   FilesListResponse,
   ApiError,
   UploadOptions,

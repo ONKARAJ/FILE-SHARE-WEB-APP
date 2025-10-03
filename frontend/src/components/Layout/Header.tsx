@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useUser, useClerk } from '@clerk/clerk-react';
-import { Upload, Menu, X, User, LogOut, Settings } from 'lucide-react';
+import { Upload, Menu, X, LogOut } from 'lucide-react';
 
 const Header: React.FC = () => {
   const { isSignedIn, user } = useUser();
