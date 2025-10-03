@@ -62,8 +62,9 @@ async function handler(req, res) {
     // Store file metadata
     files.set(fileId, fileMetadata);
 
-    // Generate shareable link
-    const shareableLink = `${req.headers.origin || 'https://file-share-web-gn6nfomae-onkar-rajs-projects.vercel.app'}/download/${fileId}`;
+    // Generate shareable link to frontend download page
+    const baseUrl = req.headers.origin || req.headers.host || 'https://file-share-web-1nond0wsd-onkar-rajs-projects.vercel.app';
+    const shareableLink = `${baseUrl}/download/${fileId}`;
 
     // For demo, determine if file can be previewed
     const previewableTypes = ['image/', 'text/', 'application/pdf'];
