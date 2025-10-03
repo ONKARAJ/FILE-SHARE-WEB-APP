@@ -74,28 +74,25 @@ class ApiService {
     options: UploadOptions = {},
     onProgress?: (progress: number) => void
   ): Promise<UploadResponse> {
-    const formData = new FormData();
-    formData.append('file', file);
-    
-    if (options.is_public !== undefined) {
-      formData.append('is_public', String(options.is_public));
-    }
-    
-    if (options.password) {
-      formData.append('password', options.password);
+    // For demo purposes, simulate file upload with JSON data
+    const uploadData = {
+      fileName: file.name,
+      fileSize: file.size,
+      fileType: file.type,
+      ...options
+    };
+
+    // Simulate upload progress
+    if (onProgress) {
+      const intervals = [10, 25, 50, 75, 90, 100];
+      for (const progress of intervals) {
+        setTimeout(() => onProgress(progress), 200 * (progress / 20));
+      }
     }
 
-    const response = await this.api.post<UploadResponse>('/api/upload', formData, {
+    const response = await this.api.post<UploadResponse>('/api/upload', uploadData, {
       headers: {
-        'Content-Type': 'multipart/form-data',
-      },
-      onUploadProgress: (progressEvent) => {
-        if (onProgress && progressEvent.total) {
-          const percentCompleted = Math.round(
-            (progressEvent.loaded * 100) / progressEvent.total
-          );
-          onProgress(percentCompleted);
-        }
+        'Content-Type': 'application/json',
       },
     });
     

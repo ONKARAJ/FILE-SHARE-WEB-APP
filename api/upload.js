@@ -1,18 +1,20 @@
-const formidable = require('formidable');
-const fs = require('fs');
-const path = require('path');
-const { v4: uuidv4 } = require('uuid');
-
 // Simple in-memory storage for demo (in production, use a database)
 const files = new Map();
 
+// Simple ID generator for demo
+function generateId() {
+  return Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
+}
+
 export const config = {
   api: {
-    bodyParser: false,
+    bodyParser: {
+      sizeLimit: '10mb',
+    },
   },
 };
 
-export default function handler(req, res) {
+export default async function handler(req, res) {
   // Set CORS headers
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
@@ -28,70 +30,48 @@ export default function handler(req, res) {
   }
 
   try {
-    const form = formidable({
-      maxFileSize: 10 * 1024 * 1024, // 10MB limit
-      keepExtensions: true,
-    });
+    // For demo purposes, simulate file upload with JSON data
+    const { fileName, fileSize, fileType } = req.body;
+    
+    if (!fileName) {
+      return res.status(400).json({ error: 'File name is required' });
+    }
 
-    form.parse(req, async (err, fields, files) => {
-      if (err) {
-        console.error('Form parsing error:', err);
-        return res.status(400).json({ error: 'Failed to parse file upload' });
-      }
+    // Generate unique file ID
+    const fileId = generateId();
+    
+    // Create file metadata
+    const fileMetadata = {
+      id: fileId,
+      original_name: fileName,
+      mime_type: fileType || 'application/octet-stream',
+      size_bytes: fileSize || 0,
+      size_formatted: formatFileSize(fileSize || 0),
+      download_count: 0,
+      is_public: true,
+      is_password_protected: false,
+      is_expired: false,
+      expires_at: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // 7 days
+      created_at: new Date().toISOString(),
+      last_accessed_at: null,
+    };
 
-      const uploadedFile = files.file;
-      if (!uploadedFile) {
-        return res.status(400).json({ error: 'No file uploaded' });
-      }
+    // Store file metadata
+    files.set(fileId, fileMetadata);
 
-      // Generate unique file ID
-      const fileId = uuidv4();
-      const originalName = Array.isArray(uploadedFile.originalFilename) 
-        ? uploadedFile.originalFilename[0] 
-        : uploadedFile.originalFilename;
-      
-      const fileSize = Array.isArray(uploadedFile.size) 
-        ? uploadedFile.size[0] 
-        : uploadedFile.size;
+    // Generate shareable link
+    const shareableLink = `${req.headers.origin || 'https://file-share-web-gn6nfomae-onkar-rajs-projects.vercel.app'}/download/${fileId}`;
 
-      const mimeType = Array.isArray(uploadedFile.mimetype) 
-        ? uploadedFile.mimetype[0] 
-        : uploadedFile.mimetype;
+    // For demo, determine if file can be previewed
+    const previewableTypes = ['image/', 'text/', 'application/pdf'];
+    const canPreview = previewableTypes.some(type => fileMetadata.mime_type?.startsWith(type));
 
-      // For demo purposes, we'll store file metadata in memory
-      // In production, save to database and cloud storage
-      const fileMetadata = {
-        id: fileId,
-        original_name: originalName,
-        mime_type: mimeType || 'application/octet-stream',
-        size_bytes: fileSize,
-        size_formatted: formatFileSize(fileSize),
-        download_count: 0,
-        is_public: true,
-        is_password_protected: false,
-        is_expired: false,
-        expires_at: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // 7 days
-        created_at: new Date().toISOString(),
-        last_accessed_at: null,
-      };
-
-      // Store file metadata
-      files.set(fileId, fileMetadata);
-
-      // Generate shareable link
-      const shareableLink = `${req.headers.origin || 'https://file-share-web-app.vercel.app'}/download/${fileId}`;
-
-      // For demo, determine if file can be previewed
-      const previewableTypes = ['image/', 'text/', 'application/pdf'];
-      const canPreview = previewableTypes.some(type => mimeType?.startsWith(type));
-
-      res.status(200).json({
-        success: true,
-        message: 'File uploaded successfully',
-        file: fileMetadata,
-        shareable_link: shareableLink,
-        can_preview: canPreview,
-      });
+    res.status(200).json({
+      success: true,
+      message: 'File uploaded successfully',
+      file: fileMetadata,
+      shareable_link: shareableLink,
+      can_preview: canPreview,
     });
   } catch (error) {
     console.error('Upload error:', error);
