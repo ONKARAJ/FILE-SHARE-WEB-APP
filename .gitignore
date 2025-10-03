@@ -105,3 +105,4 @@ backend/uploads/*
 
 # Optional stylelint cache directory
 .stylelintcache
+.vercel
