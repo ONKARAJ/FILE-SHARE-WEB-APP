@@ -15,13 +15,17 @@ import {
 const getApiBaseUrl = () => {
   // If running in production (on Vercel), use the current domain
   if (typeof window !== 'undefined' && window.location.hostname.includes('vercel.app')) {
+    console.log('🔧 API: Using current domain for API calls:', window.location.origin);
     return window.location.origin;
   }
   // Otherwise use environment variable or localhost
-  return process.env.REACT_APP_API_URL || 'http://localhost:5000';
+  const fallbackUrl = process.env.REACT_APP_API_URL || 'http://localhost:5000';
+  console.log('🔧 API: Using fallback URL:', fallbackUrl);
+  return fallbackUrl;
 };
 
 const API_BASE_URL = getApiBaseUrl();
+console.log('🔧 API: Final API_BASE_URL:', API_BASE_URL);
 
 class ApiService {
   private api: AxiosInstance;
@@ -92,6 +96,11 @@ class ApiService {
       ...options
     };
 
+    console.log('🚀 Upload: Starting file upload:', file.name);
+    console.log('🚀 Upload: API Base URL:', API_BASE_URL);
+    console.log('🚀 Upload: Full URL will be:', `${API_BASE_URL}/api/upload`);
+    console.log('🚀 Upload: Data:', uploadData);
+
     // Simulate upload progress
     if (onProgress) {
       const intervals = [10, 25, 50, 75, 90, 100];
@@ -100,13 +109,19 @@ class ApiService {
       }
     }
 
-    const response = await this.api.post<UploadResponse>('/api/upload', uploadData, {
-      headers: {
-        'Content-Type': 'application/json',
-      },
-    });
-    
-    return response.data;
+    try {
+      const response = await this.api.post<UploadResponse>('/api/upload', uploadData, {
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+      
+      console.log('✅ Upload: Success!', response.data);
+      return response.data;
+    } catch (error) {
+      console.error('❌ Upload: Error!', error);
+      throw error;
+    }
   }
 
   async getFileInfo(fileId: string, password?: string) {
