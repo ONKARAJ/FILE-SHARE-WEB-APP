@@ -28,6 +28,8 @@ async function handler(req, res) {
     }
 
     console.log(`🔍 Download API: Looking for file ${fileId}`);
+    console.log(`💾 Download API: Available files in storage:`, Array.from(files.keys()));
+    console.log(`💾 Download API: Total files in storage:`, files.size);
     
     // Get the actual file from storage
     const fileData = files.get(fileId);

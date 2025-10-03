@@ -33,12 +33,19 @@ const DownloadPage: React.FC = () => {
       });
       
       if (!response.ok) {
+        const errorText = await response.text();
+        console.error('❌ Download page: API error response:', {
+          status: response.status,
+          statusText: response.statusText,
+          body: errorText
+        });
+        
         if (response.status === 404) {
           throw new Error('File not found or expired');
         } else if (response.status === 410) {
           throw new Error('File has expired');
         } else {
-          throw new Error('Failed to load file information');
+          throw new Error(`Failed to load file information: ${response.status} ${response.statusText}`);
         }
       }
       
